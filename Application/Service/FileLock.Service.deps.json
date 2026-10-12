@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "FileLock.Service/0.4.1": {
+        "dependencies": {
+          "FileLock.Shared": "1.0.0"
+        },
+        "runtime": {
+          "FileLock.Service.dll": {}
+        }
+      },
+      "FileLock.Shared/1.0.0": {
+        "runtime": {
+          "FileLock.Shared.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "FileLock.Service/0.4.1": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "FileLock.Shared/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
