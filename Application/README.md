@@ -1,78 +1,176 @@
 # FileLock
 
-A Windows desktop application that protects files, folders and application executables at their **original locations**. FileLock opens require a six-digit passcode. Original folder opening shows the passcode dialog while the management window stays hidden, and access relocks when the observed use ends.
+Six-digit passcode protection for files, folders and portable application executables on Windows, at their original locations.
+
+FileLock combines a Windows desktop interface with a background permission service. Opening a protected folder through its default Explorer action shows the passcode dialog while the management window stays hidden. Supported items lock again when their observed use ends.
+
+**Version:** 0.4.2 · **Platform:** Windows x64 · **Built with:** C#, .NET 10 and WPF
+
+FileLock uses NTFS permissions. Protected content remains unencrypted, and other permitted programs can read it during an approved use. Read [Protection boundaries](docs/PROTECTION.md) for supported behavior and limitations.
+
+## Features
+
+- Protect personal files, folders and portable `.exe` applications at their existing paths.
+- Use one **shared master passcode**, or a **separate six-digit passcode** for each item.
+- Require a fresh master passcode when opening the FileLock management window.
+- Ask for the item passcode on each explicit opening through FileLock, the protected folder's default Explorer action, or the file context command.
+- Keep previews, indexing and other background reads from opening unsolicited PIN dialogs.
+- Relock after the last supported folder or viewer window closes, or an observed application exits.
+- Recover a forgotten master passcode with a saved recovery key.
+- Repair same-volume renamed or moved items using their saved identities.
+- Safely clear deleted-item records after verifying deletion and restoring surviving originals' permissions.
+- Install and uninstall through graphical Setup and Windows **Installed apps**.
+
+## Requirements
+
+| Requirement | Details |
+| --- | --- |
+| Operating system | 64-bit Windows |
+| Runtime | [.NET 10 Desktop Runtime, x64](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) |
+| Storage | Local, fixed NTFS drives |
+| Installation | Windows administrator approval to install the service |
+| Building from source | .NET 10 SDK on Windows x64 |
+
+The runtime is not bundled. Setup checks for it before installation. Current builds are unsigned.
 
 ## Install
 
-1. Download `FileLock-0.4.1-Setup.exe` from the project's GitHub Releases, or use the locally built file in `release`.
-2. Open Setup, choose **Install**, and approve the Windows administrator prompt.
-3. Choose **Open FileLock**, or find **FileLock** in the Start menu.
-4. Create a six-digit master passcode and save the recovery key.
-5. Add a file, folder or executable. Choose the shared master passcode or its own six-digit passcode.
+Use `FileLock-0.4.2-Setup.exe` from a published release or a local build. Packaged downloads belong on the repository's **Releases** page.
 
-Requirements: Windows x64, local fixed NTFS storage, and [.NET 10 Desktop Runtime x64](https://dotnet.microsoft.com/en-us/download/dotnet/10.0). Setup checks the runtime before installation and provides its download link. The desktop and service are framework-dependent; the .NET runtime is not bundled. Setup itself uses Windows' .NET Framework. This build is unsigned.
+1. Open Setup and select **Install**.
+2. Approve the Windows administrator prompt.
+3. Select **Open FileLock**, or open FileLock from the Start menu.
+4. On first use, create a six-digit master passcode and save the recovery key.
+5. Select **Protect a location** and choose a file, folder or portable executable.
+6. Explicitly choose **Shared master passcode** or **Separate passcode for this location**. Enter a separate passcode twice to confirm it.
 
-The ZIP package is also available: extract `FileLock-0.4.1-Windows.zip`, run `install.cmd`, then open FileLock from the Start menu. Setup installs the app and its automatic Windows service under `C:\Program Files\FileLock` and registers it in Windows **Installed apps**. It enables File System and Handle Manipulation failure auditing for denied-access prompts.
+For the ZIP distribution, extract `FileLock-0.4.2-Windows.zip` and run `install.cmd`.
 
-**Sinhala:** Setup.exe open karala **Install** click karanna. Windows prompt eka approve karala **Open FileLock** click karanna. Anka 6ka passcode ekak hadala recovery key eka save karanna. File/folder eka add karanna. Locked folder eka open karaddi passcode dialog eka witharak penwanawa.
+Install matching desktop and service versions through Setup when upgrading. Existing passcodes and recovery data are preserved. Setup installs into `C:\Program Files\FileLock`, registers the application in Windows **Installed apps**, and retains Windows failure auditing for access diagnostics.
 
-## Use and recover
+## Use FileLock
 
-- Opening FileLock from its launcher or notification-area icon asks for the master passcode each time before showing the management window. The first opening guides an unconfigured account through passcode setup.
-- When adding or changing a location's passcode, explicitly choose **Shared master passcode** or **Separate passcode for this location**. A separate passcode requires six digits and matching confirmation; leading zeroes are supported. The master passcode does not unlock an individual location.
-- Open a protected item through FileLock, or double-click the original protected folder, and enter its location passcode every time. This also applies when the location is already open. A wrong passcode or Cancel does not open another view or create a new access grant.
-- Close all observed Explorer views of a protected folder, including its subfolders, to relock it automatically. Viewer/window closure normally settles for two seconds before relocking. An observed application process exit closes its access on the next check. If the background agent loses its heartbeat, the service's 15-second deadline closes access.
-- File viewers must expose an identifiable document window title for close detection. An unidentifiable viewer gets a bounded 10-second launch grace before FileLock relocks. See [the protection boundaries](docs/PROTECTION.md) for window/tab limitations.
-- Use **Lock now** to end access immediately. Use **Remove protection** to restore the saved original Windows permissions permanently.
-- If a protected item is renamed or moved on the same NTFS volume, FileLock can find it using its saved identity and repair the path when relocking. For an item showing **Needs attention**, choose **Manage → Repair moved location**. If automatic discovery fails, select that same item at its current path. Repair keeps its passcode and saved original permissions, relocks it, and does not open it. An unrelated replacement cannot replace the saved item.
-- After installing version 0.4.1 or newer, choose **Manage → Remove protection** for a protected item you deleted or moved to the Recycle Bin. FileLock verifies its original volume and every saved object identity, restores permissions on surviving original objects, then safely removes the record. Remaining content is kept. If its drive is unavailable or restoration cannot complete, the recovery record stays available for retry.
-- Adding a folder enables its Explorer prompt setting and starts the prompt agent quietly when you sign in. Disable this in **Security & recovery** to restore the previous folder default action.
-- Recover the master passcode using the saved recovery key; recovery creates a replacement key. After signing in with the master passcode, use **Reset forgotten passcode** for an individual item.
-- Existing passcodes are preserved during upgrades. If an earlier version saved an item as **Shared passcode**, use **Manage → Change passcode**, enter its current master passcode, and choose **Separate passcode for this location** to set the intended individual passcode.
-- Before uninstalling, remove protection from every item in every Windows account. Then use Windows **Installed apps** or **Uninstall FileLock** in the Start menu. Uninstall refuses while protected items remain. Account/recovery data is retained for reinstall.
+### Open and lock items
 
-During an approved use, the original Windows permissions apply, so other permitted programs can also read the location. Every FileLock-mediated opening asks for a passcode; this version does not intercept every program's read. Keep a separate backup and close programs already using the item before protecting it.
+Double-click the original protected folder, or select an item in FileLock and choose **Unlock & open**. For a file or executable in Explorer, right-click it and choose **Unlock & open with FileLock**; on Windows 11 this may appear under **Show more options**. This also supports a file inside a protected folder, using that folder's passcode.
 
-## Build
+Enter the item's six-digit passcode. An individual item requires its own passcode; the master passcode does not replace it. Wrong passcodes and **Cancel** do not open another view or create a new access grant. Cancel remains canceled until another explicit opening.
 
-Install the Windows x64 [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0). Open `FileLock.slnx` in an editor, or use Windows PowerShell:
+Keep FileLock running in the notification area for prompts and close detection. Close all observed Explorer views of a protected folder, including its subfolders, or close the supported document/application window to relock. Window closure normally settles for two seconds before relocking. Use **Manage → Lock now** to end access immediately.
+
+If the background agent stops sending access heartbeats, the service relocks after its 15-second deadline. Unidentified document viewers receive a 10-second launch grace. Close detection depends on the viewer and Explorer view; some tabs, window titles and application launchers cannot be tracked reliably.
+
+Adding a folder enables its Explorer prompt integration and starts the background agent at sign-in. Explorer folder prompts and the file context command can be configured in **Security & recovery**. Ordinary file double-clicks, Explorer navigation and other programs may show Windows **Access denied** while an item is locked. Use the explicit FileLock command to enter its passcode. Background access failures do not produce automatic prompts.
+
+### Change or recover passcodes
+
+| Task | Action |
+| --- | --- |
+| Change an item's shared or individual passcode | **Manage → Change this passcode…** |
+| Reset a forgotten item passcode | Sign in with the master passcode, then use **Manage → Reset a forgotten passcode…** |
+| Recover the master passcode | Select **Forgot your passcode?** at the opening prompt and use the saved recovery key |
+
+Master recovery issues a replacement recovery key. Save it; the previous key will no longer work.
+
+If an earlier version saved an item as shared, use **Change this passcode…**, enter its current master passcode, and choose **Separate passcode for this location** to assign an individual PIN. Leading zeroes are supported.
+
+## Troubleshooting
+
+| Situation | What to do |
+| --- | --- |
+| A renamed or moved item shows **Needs attention** | Select **Manage → Repair moved location…**. If discovery fails, select the same original item at its current location on the same drive. |
+| A deleted item shows **Could not find file** | Install 0.4.2 or newer, select the item, and choose **Manage → Remove protection…**. FileLock verifies its identities, restores surviving originals' permissions, and clears the old record. It does not recreate the deleted folder. |
+| The item is in the Recycle Bin | Use **Remove protection…**, or restore it from the Recycle Bin before repairing its location. |
+| The original drive is unavailable | Reconnect it before retrying. The recovery journal is retained until verification and restoration succeed. |
+| The service is unavailable or versions do not match | Run the matching Setup application to install or repair the desktop and service. |
+| PIN popups appear while no item is being opened | Install 0.4.2 or newer. Background access audits no longer create PIN prompts. Use the protected-folder action, **Unlock & open**, or the Explorer file command when opening an item. |
+
+Repair cannot substitute an unrelated folder, a similarly named file or a copy on another volume for the original item. Repair and removal keep any remaining content.
+
+## Uninstall
+
+1. Remove protection from every item in every Windows account using FileLock.
+2. Open Windows **Installed apps**, or select **Uninstall FileLock** in the Start menu.
+3. Complete the uninstall operation.
+
+Uninstall refuses while protected items remain. Account and recovery data is retained for reinstall. For deleted items, clear their records using **Remove protection…** first.
+
+## Protection limits
+
+- Original Windows permissions apply during approved use, so other permitted accounts and programs can also access the location. FileLock does not intercept every filesystem read.
+- Existing file handles, mapped files and running applications may retain access after relocking.
+- A Windows administrator can deliberately take ownership or use recovery privileges. SYSTEM and offline disk access are outside this protection boundary.
+- Protecting an executable does not stop an existing process or protect another copy.
+- System locations, profile/AppData roots, network or removable storage, reparse points, cloud placeholders, junctions, symlinks, hardlinked files and overlapping protected locations are rejected.
+- Protected folders support up to 10,000 entries.
+- If the permission service itself stops during approved use, restored permissions can remain until it restarts.
+
+Keep a separate backup and close programs already using an item before protecting it. See [Protection boundaries](docs/PROTECTION.md) for details.
+
+## Build from source
+
+Install the Windows x64 [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0), then run these commands from the repository root in PowerShell.
+
+Build the application and run ordinary regression suites:
 
 ```powershell
 .\scripts\build.ps1 -Test
-.\scripts\run.ps1
 ```
 
-The projects use built-in framework libraries with no external NuGet packages. Build output is `dist`. To build the graphical installer and both distribution archives:
+Create the installer and distribution archives:
 
 ```powershell
 .\scripts\release.ps1 -Test
 ```
 
-Outputs in `release`:
+Build output is written to `dist`; release packages are written to `release`. Building does not install the service or change protected folders. Install the matching package before exercising original-location protection. Use `.\scripts\run.ps1` to launch the built desktop application.
 
-- `FileLock-0.4.1-Setup.exe`: graphical installer.
-- `FileLock-0.4.1-Windows.zip`: application, broker, maintenance host and install scripts.
-- `FileLock-0.4.1-Source.zip`: source-only GitHub upload archive, including hidden configuration files.
-- `SHA256SUMS.txt`: checksums for those files.
+The projects use framework libraries without external NuGet packages. Setup and maintenance hosts use Windows' built-in .NET Framework compiler.
 
-The installer host is compiled with Windows' .NET Framework C# compiler; no third-party installer compiler is needed. Building does not install services or change protected folders. [Development and validation](docs/DEVELOPMENT.md) covers the opt-in Windows integration checks.
-
-## GitHub
-
-The workspace is a Git repository with generated files excluded. Upload the extracted contents of `FileLock-0.4.1-Source.zip` into a new repository, or push this repository using your own GitHub remote. See [the upload guide](docs/GITHUB.md).
-
-The Windows GitHub Actions workflow builds, checks the ordinary test suites and uploads the installer and archives as workflow artifacts. It does not install the service, run elevated live checks or publish a public release. Release binaries belong in GitHub Releases, not in source commits.
-
-No license has been selected for this project.
-
-## Source
-
-| Location | Purpose |
+| Release file | Contents |
 | --- | --- |
-| `src/FileLock` | WPF desktop and passcode dialogs |
-| `src/FileLock.Shared` | Local service client and bounded protocol |
-| `src/FileLock.Service` | SYSTEM permission broker, recovery and durable journals |
-| `src/FileLock.Setup` | Graphical installer and uninstall host |
-| `scripts` | Build, release, installation and verification |
-| `tests` | Passcode, permissions, broker and UI regression tests |
-| `assets` | Application icon and its generator |
+| `FileLock-0.4.2-Setup.exe` | Graphical installer |
+| `FileLock-0.4.2-Windows.zip` | Desktop, service, maintenance host and installation scripts |
+| `FileLock-0.4.2-Source.zip` | Maintained source, tests, documentation and hidden configuration files |
+| `SHA256SUMS.txt` | SHA-256 checksums for the release files |
+
+### Validation
+
+Local validation for 0.4.2 passed 11 core test groups, 80 UI checks, 91 live Windows checks, 14 setup safety checks and two Windows PowerShell 5.1 compatibility checks.
+
+The UI count includes actual viewer-window checks and legacy-audit popup regressions. Five additional Explorer checks are optional and were inconclusive with the current shell window-reuse behavior; they are not included in this count. Native tests use disposable folders and a temporary SYSTEM service. These checks do not establish compatibility with every third-party viewer or Explorer tab.
+
+The [Windows workflow](.github/workflows/build.yml) builds, runs ordinary checks and uploads packages as workflow artifacts. It does not perform elevated native integration tests or automatically publish a GitHub release. See [Development and verification](docs/DEVELOPMENT.md) for opt-in checks.
+
+## Publish the source to GitHub
+
+Extract `FileLock-0.4.2-Source.zip` and upload its contents to the repository root, including `.gitignore` and `.github`. This file should appear as `README.md` in that root.
+
+Keep installers and application ZIPs in **GitHub Releases**. Commit maintained source and configuration; generated packages, local state, recovery keys and private diagnostics should stay out of source commits.
+
+See [Upload to GitHub](docs/GITHUB.md) for website and Git instructions.
+
+## Project structure
+
+```text
+src/
+  FileLock/          WPF desktop, passcode dialogs and Explorer integration
+  FileLock.Shared/   Local service client and protocol
+  FileLock.Service/  Permission broker, recovery and security journals
+  FileLock.Setup/    Graphical installer and maintenance host
+scripts/            Build, packaging, installation and verification
+tests/              Core, UI and native Windows regression tests
+docs/               Protection, development and GitHub guides
+assets/             Application icon and icon generator
+.github/workflows/  Windows build workflow
+```
+
+## සිංහලෙන් කෙටි උපදෙස්
+
+Setup එක install කර FileLock විවෘත කරන්න. මුලින් අංක 6ක master PIN එකක් සකස් කර recovery key එක save කරන්න. **Protect a location** හරහා item එක එකතු කර shared PIN එක හෝ වෙනම individual PIN එක තෝරන්න.
+
+Delete කළ folder එකක් නිසා error එකක් පෙන්වන්නේ නම්, 0.4.2 version එක install කර එම item එක තෝරා **Manage → Remove protection…** කරන්න. Rename හෝ move කළ item සඳහා **Repair moved location…** භාවිත කරන්න.
+
+## License
+
+No license has been selected. This repository does not include a `LICENSE` file.

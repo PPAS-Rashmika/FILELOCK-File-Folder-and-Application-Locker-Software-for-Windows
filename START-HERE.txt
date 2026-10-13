@@ -1,24 +1,21 @@
-﻿FileLock 0.4.1
+﻿FileLock 0.4.2 — repeated unlock popup fix
 
-Delete කළ folder එක නිසා එන "Could not find file" error එකේ fix එක මෙම version එකේ ඇත.
+Background scans/previews නිසා PIN popup එක නැවත නැවත එන ගැටලුව හදා ඇත.
 
-1. FileLock-0.4.1-Setup.exe run කර Install කරන්න.
-2. FileLock open කර ඔබගේ දැන් තිබෙන master PIN එක ඇතුළත් කරන්න.
-3. Delete කළ item එක select කරන්න.
-4. Manage > Remove protection තෝරා confirm කරන්න.
+File එකක් open කිරීමට:
+- Explorer එකේ file එක right-click කරන්න.
+- Windows 11 හි Show more options තෝරන්න.
+- Unlock & open with FileLock තෝරා අංක 6ක PIN එක ඇතුළත් කරන්න.
+- නැත්නම් FileLock application එකෙන් item එක තෝරා Unlock & open කරන්න.
 
-FileLock මුල් NTFS drive එක සහ saved file identities පරීක්ෂා කරයි.
-වෙනත් තැනකට ගෙනගිය original file එකක් ඉතිරිව තිබේ නම් එහි මුල් permissions ආපසු ලබාදෙයි.
-ඉන්පසු පරණ protection record එක ඉවත් වේ. වෙනත් folder/file වලට permissions ලබා නොදෙයි.
-Drive එක නැති නම් හෝ පරීක්ෂාව සම්පූර්ණ කළ නොහැකි නම් recovery record එක ඉවත් නොකරයි.
-Deleted folder එක නැවත create කරන්නේ නැත.
+Protected folder එකේ default double-click action එකත් PIN ඉල්ලයි.
+Windows background reads, previews සහ indexing නිසා popup පෙන්වන්නේ නැත.
+Cancel කළ prompt එක background events නිසා නැවත නොපෙන්වයි.
+සාමාන්‍ය file double-click කිරීමේදී Access denied පෙන්විය හැක; ඉහත FileLock ක්‍රියාව භාවිත කරන්න.
 
-Rename/move කළ item සඳහා Manage > Repair moved location භාවිත කරන්න.
-අලුත් version එකේ app සහ service දෙකම install කළ යුතුය.
+අලුත් app සහ service දෙකම install කළ යුතු නිසා FileLock-0.4.2-Setup.exe භාවිත කරන්න.
 Existing PIN සහ recovery data reset කරන්නේ නැත.
 
-Application/ - application files
-FileLock-0.4.1-Setup.exe - recommended installer
-FileLock-0.4.1-Windows.zip - application package
-FileLock-0.4.1-Source.zip - GitHub source archive; no license added
-Application/docs/PROTECTION.md - supported behavior and access limitations
+Application/ contains the application package.
+FileLock-0.4.2-Source.zip contains GitHub-ready source and the updated README.
+No license has been added.

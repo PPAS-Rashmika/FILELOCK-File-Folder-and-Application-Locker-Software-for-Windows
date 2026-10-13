@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v10.0": {
-      "FileLock/0.4.1": {
+      "FileLock/0.4.2": {
         "dependencies": {
           "FileLock.Shared": "1.0.0"
         },
@@ -25,7 +25,7 @@
     }
   },
   "libraries": {
-    "FileLock/0.4.1": {
+    "FileLock/0.4.2": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

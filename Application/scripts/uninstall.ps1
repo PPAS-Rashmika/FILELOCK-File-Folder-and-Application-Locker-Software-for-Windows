@@ -36,9 +36,12 @@ public static class FileLockUninstallShell {
         int error = RegLoadAppKey(path, out handle, 0x20019, 1, 0);
         if (error != 0) throw new Win32Exception(error, "Cannot verify an offline Windows user's folder settings. Sign in to that account and disable FileLock folder prompts before uninstalling.");
         using (handle)
-        using (var root = RegistryKey.FromHandle(handle))
-        using (var shell = root.OpenSubKey(@"Directory\shell"))
-            return shell != null && (shell.GetValue("") as string) == "FileLock.Open";
+        using (var root = RegistryKey.FromHandle(handle)) {
+            using (var shell = root.OpenSubKey(@"Directory\shell"))
+                if (shell != null && (shell.GetValue("") as string) == "FileLock.Open") return true;
+            using (var fileVerb = root.OpenSubKey(@"*\shell\FileLock.Open"))
+                return fileVerb != null && (fileVerb.GetValue("FileLockOwner") as string) == "FileLock.FileShellIntegration.v1";
+        }
     }
     public static void Refresh() { SHChangeNotify(0x08000000, 0, IntPtr.Zero, IntPtr.Zero); }
 }
@@ -52,7 +55,7 @@ public static class FileLockUninstallShell {
         if (Test-Path -LiteralPath $classHive -PathType Leaf) {
             Assert-FileLockNoReparsePoint $classHive
             if ([FileLockUninstallShell]::OfflineGateEnabled($classHive)) {
-                throw 'An offline Windows account still has FileLock folder prompts enabled. Sign in to that account and disable the folder prompt setting before uninstalling.'
+                throw 'An offline Windows account still has FileLock Explorer commands enabled. Sign in to that account and disable the folder prompt and file command settings before uninstalling.'
             }
         }
     }
@@ -78,6 +81,15 @@ public static class FileLockUninstallShell {
                 }
                 if ($shell) { $shell.DeleteSubKeyTree('FileLock.Open', $false) }
             } finally { if ($backup) { $backup.Dispose() }; if ($shell) { $shell.Dispose() } }
+            $fileShell = $profileKey.OpenSubKey('Software\Classes\*\shell', $true)
+            try {
+                if ($fileShell) {
+                    $fileVerb = $fileShell.OpenSubKey('FileLock.Open')
+                    try { $ownedFileCommand = $fileVerb -and $fileVerb.GetValue('FileLockOwner') -eq 'FileLock.FileShellIntegration.v1' }
+                    finally { if ($fileVerb) { $fileVerb.Dispose() } }
+                    if ($ownedFileCommand) { $fileShell.DeleteSubKeyTree('FileLock.Open', $false) }
+                }
+            } finally { if ($fileShell) { $fileShell.Dispose() } }
             $run = $profileKey.OpenSubKey('Software\Microsoft\Windows\CurrentVersion\Run', $true)
             try {
                 if ($run -and $run.GetValue('FileLock') -is [string] -and $run.GetValue('FileLock').StartsWith('"' + (Join-Path $FileLockInstallRoot 'App\FileLock.exe') + '"', [StringComparison]::OrdinalIgnoreCase)) { $run.DeleteValue('FileLock', $false) }

@@ -39,6 +39,10 @@ Local 0.4.1 validation passed 11 core groups, 67 UI checks (62 ordinary checks p
 
 ## Release
 
+Version 0.4.2 treats access audits as diagnostics. Broker regression cases inject mixed-session background denials and repeat them beyond the old three-second cooldown while checking that Poll stays empty and locked permissions and saved state are unchanged. Desktop regressions feed legacy audit bursts, including deliveries during and after a canceled explicit PIN prompt; those deliveries must not open another window. Explicit file context requests are checked for safe target selection, including documents and executables inside a protected folder. Raw audit generation, PIN approval, recovery and automatic relocking remain covered by the native suite.
+
+The local 0.4.2 run passed 11 core groups, 80 ordinary UI checks and 91 live Windows checks. Its optional Explorer fixture could not verify ownership of a separate window under the current shell's reuse behavior, so its five checks are inconclusive and excluded. The fixture now snapshots existing top-level windows and skips if no verified new window is exposed; it never closes an existing user window.
+
 ```powershell
 .\scripts\release.ps1 -Test
 ```
@@ -51,6 +55,6 @@ GUI installation performs the existing audited PowerShell installation under UAC
 
 `src/FileLock.Setup/test-uninstall.ps1` is a separate, opt-in **real removal** test. It refuses if protected items remain, runs the maintenance GUI operation, and verifies that the service, installation, shortcuts and Installed apps entry are removed while the encrypted account/recovery state remains intact. Run this only when you intend to uninstall. The maintenance GUI and its PowerShell child use temporary working directories so they cannot keep the installation directory open during deletion.
 
-The requested 0.4.1 delivery is saved in a separate `FileLock-0.4.1` directory. Its `Application` subdirectory contains the runnable application package; the graphical installer and Windows/source archives are alongside it. Normal release-script output remains in `release` before delivery copying.
+The latest delivery is saved in a separate `FileLock-0.4.2` directory. Its `Application` subdirectory contains the runnable application package; the graphical installer and Windows/source archives are alongside it. Normal release-script output remains in `release` before delivery copying.
 
 Release builds are unsigned and require .NET 10 Desktop Runtime x64. The runtime is not bundled. Reboot, different viewers, Explorer tabs, launcher handoffs and full multi-account uninstall should be tested on a disposable Windows machine before distributing a production release broadly. The project has no selected license.
